@@ -103,6 +103,5 @@ setup(
       fake-kibana = connectors.kibana:main
       connectors = connectors.connectors_cli:main
       test-connectors = scripts.testing.cli:main
-      elastic-agent-connectors = connectors.agent.cli:main
       """,
 )

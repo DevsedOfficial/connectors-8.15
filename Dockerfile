@@ -1,7 +1,4 @@
-FROM python:3.11-slim-bookworm
-RUN apt -y update && apt -y upgrade && apt -y install make git
+FROM python:3.10
 COPY . /app
 WORKDIR /app
 RUN make clean install
-RUN ln -s .venv/bin /app/bin
-ENTRYPOINT []

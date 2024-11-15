@@ -4,7 +4,6 @@
 # you may not use this file except in compliance with the Elastic License 2.0.
 #
 """Microsoft SQL source module is responsible to fetch documents from Microsoft SQL."""
-
 import asyncio
 import os
 from functools import cached_property, partial
@@ -82,7 +81,6 @@ class MSSQLAdvancedRulesValidator(AdvancedRulesValidator):
         "properties": {
             "tables": {"type": "array", "minItems": 1},
             "query": {"type": "string", "minLength": 1},
-            "id_columns": {"type": "array", "minItems": 1},
         },
         "required": ["tables", "query"],
         "additionalProperties": False,
@@ -232,8 +230,7 @@ class MSSQLClient:
             loop = asyncio.get_running_loop()
             if self.connection is None:
                 self.connection = await loop.run_in_executor(
-                    executor=None,
-                    func=self.engine.connect,  # pyright: ignore
+                    executor=None, func=self.engine.connect  # pyright: ignore
                 )
             cursor = await loop.run_in_executor(
                 executor=None,
@@ -319,15 +316,23 @@ class MSSQLClient:
 
     async def get_table_last_update_time(self, table):
         self._logger.debug(f"Fetching last updated time for table: {table}")
-        async for [last_update_time] in fetch(
-            cursor_func=partial(
-                self.get_cursor,
-                self.queries.table_last_update_time(schema=self.schema, table=table),
-            ),
-            fetch_size=1,
-            retry_count=self.retry_count,
-        ):
-            return last_update_time
+        [last_update_time] = await anext(
+            fetch(
+                cursor_func=partial(
+                    self.get_cursor,
+                    self.queries.table_last_update_time(
+                        schema=self.schema,
+                        table=table,
+                    ),
+                ),
+                fetch_size=1,
+                retry_count=self.retry_count,
+            )
+        )
+        self._logger.debug(
+            f'Last updated time for table "{table}" is {last_update_time}'
+        )
+        return last_update_time
 
     async def data_streamer(self, table=None, query=None):
         """Streaming data from a table
@@ -533,7 +538,7 @@ class MSSQLDataSource(BaseDataSource):
             column_names=column_names, schema=self.schema, tables=tables
         )
 
-        if (not set(primary_key_columns) - set(column_names)) or primary_key_columns:
+        if not set(primary_key_columns) - set(column_names):
             async for row in streamer:
                 row = dict(zip(column_names, row, strict=True))
                 yield row
@@ -561,7 +566,7 @@ class MSSQLDataSource(BaseDataSource):
                 f'Something went wrong while fetching document for table "{table}". Error: {exception}'
             )
 
-    async def fetch_documents_from_query(self, tables, query, id_columns):
+    async def fetch_documents_from_query(self, tables, query):
         """Fetches all the data from the given query and format them in Elasticsearch documents
 
         Args:
@@ -572,12 +577,10 @@ class MSSQLDataSource(BaseDataSource):
             Dict: Document to be indexed
         """
         self._logger.info(
-            f"Fetching records for tables {tables} using the custom query: {query} and available id_columns: {id_columns}"
+            f"Fetching records for tables {tables} using the custom query: {query}"
         )
         try:
-            docs_generator = self._yield_docs_custom_query(
-                tables=tables, query=query, id_columns=id_columns
-            )
+            docs_generator = self._yield_docs_custom_query(tables=tables, query=query)
             async for doc in docs_generator:
                 yield doc
         except (InternalClientError, ProgrammingError) as exception:
@@ -585,12 +588,8 @@ class MSSQLDataSource(BaseDataSource):
                 f"Something went wrong while fetching document for query {query} and tables {', '.join(tables)}. Error: {exception}"
             )
 
-    async def _yield_docs_custom_query(self, tables, query, id_columns=None):
+    async def _yield_docs_custom_query(self, tables, query):
         primary_key_columns = await self.get_primary_key(tables=tables)
-
-        if id_columns:
-            primary_key_columns = id_columns
-
         if not primary_key_columns:
             self._logger.warning(
                 f"Skipping tables {', '.join(tables)} from database {self.database} since no primary key is associated with them. Assign primary key to the tables to index it in the next sync interval."
@@ -606,19 +605,12 @@ class MSSQLDataSource(BaseDataSource):
                 ],
             )
         )
-
-        last_update_times = [
-            time_value for time_value in last_update_times if time_value is not None
-        ]
-
         last_update_time = (
             max(last_update_times) if len(last_update_times) else iso_utc()
         )
 
         async for row in self.yield_rows_for_query(
-            primary_key_columns=primary_key_columns,
-            tables=tables,
-            query=query,
+            primary_key_columns=primary_key_columns, tables=tables, query=query
         ):
             doc_id = f"{self.database}_{self.schema}_{hash_id(list(tables), row, primary_key_columns)}"
 
@@ -682,18 +674,9 @@ class MSSQLDataSource(BaseDataSource):
             for rule in advanced_rules:
                 query = rule.get("query")
                 tables = rule.get("tables")
-                id_columns = rule.get("id_columns", [])
-
-                id_columns_str = ""
-                for i, table in enumerate(tables):
-                    if i == 0:
-                        id_columns_str = f"{self.schema}_{table}"
-                    else:
-                        id_columns_str = f"{id_columns_str}_{table}"
-                id_columns = [f"{id_columns_str}_{column}" for column in id_columns]
 
                 async for row in self.fetch_documents_from_query(
-                    tables=tables, query=query, id_columns=id_columns
+                    tables=tables, query=query
                 ):
                     yield row, None
         else:

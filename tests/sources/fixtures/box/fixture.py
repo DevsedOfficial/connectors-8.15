@@ -5,7 +5,6 @@
 #
 # ruff: noqa: T201
 """Module to handle api calls received from connector."""
-
 import io
 import os
 import random

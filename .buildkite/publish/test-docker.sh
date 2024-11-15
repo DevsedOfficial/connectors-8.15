@@ -35,7 +35,7 @@ esac
 
 # Load the image from the artifact created in build-docker.sh
 echo "Loading image from archive file..."
-docker load < "$PROJECT_ROOT/.artifacts/${DOCKER_ARTIFACT_KEY}-${DOCKER_TAG_VERSION}-${ARCHITECTURE}.tar.gz"
+docker load < "$PROJECT_ROOT/.artifacts/${DOCKER_ARTIFACT_KEY}-${VERSION}-${ARCHITECTURE}.tar.gz"
 
 # Ensure we have container-structure-test installed
 echo "Ensuring test environment is set up"
@@ -61,22 +61,21 @@ fi
 # Generate our config file
 TEST_CONFIG_FILE="$PROJECT_ROOT/.buildkite/publish/container-structure-test.yaml"
 
-# The config file needs escaped dots and pluses - we'll do that here
+# The config file needs escaped dots - we'll do that here
 ESCAPED_VERSION=${VERSION//./\\\\.}
-ESCAPED_VERSION=${ESCAPED_VERSION//+/\\\\+}
 
 # Generate the config file text
 TEST_CONFIG_TEXT='
 schemaVersion: "2.0.0"
 
 commandTests:
-  # ensure Python 3.11.* is installed
-  - name: "Python 3 Installation 3.11.*"
+  # ensure Python 3.10.* is installed
+  - name: "Python 3 Installation 3.10.*"
     command: "python3"
     args: ["--version"]
-    expectedOutput: ["Python\\s3\\.11\\.*"]
+    expectedOutput: ["Python\\s3\\.10\\.*"]
   - name: "Connectors Installation"
-    command: "/app/.venv/bin/elastic-ingest"
+    command: "/app/bin/elastic-ingest"
     args: ["--version"]
     expectedOutput: ["'"${ESCAPED_VERSION}"'*"]
 '
@@ -85,5 +84,5 @@ printf '%s\n' "$TEST_CONFIG_TEXT" > "$TEST_CONFIG_FILE"
 
 # Finally, run the tests
 echo "Running container-structure-test"
-TAG_NAME="$BASE_TAG_NAME:${DOCKER_TAG_VERSION}-${ARCHITECTURE}"
+TAG_NAME="$BASE_TAG_NAME:${VERSION}-${ARCHITECTURE}"
 "$TEST_EXEC" test --image "$TAG_NAME" --config "$TEST_CONFIG_FILE"

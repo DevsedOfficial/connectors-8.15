@@ -4,7 +4,6 @@
 # you may not use this file except in compliance with the Elastic License 2.0.
 #
 """Notion source module responsible to fetch documents from the Notion Platform."""
-
 import asyncio
 import json
 import os
@@ -174,7 +173,9 @@ class NotionClient:
                 ):
                     yield child_block
 
-                    async for grandchild in fetch_children_recursively(child_block):  # pyright: ignore
+                    async for grandchild in fetch_children_recursively(
+                        child_block
+                    ):  # pyright: ignore
                         yield grandchild
 
         try:
@@ -451,7 +452,7 @@ class NotionDataSource(BaseDataSource):
         """
         return {
             "notion_secret_key": {
-                "display": "text",
+                "display": "string",
                 "label": "Notion Secret Key",
                 "order": 1,
                 "required": True,
@@ -460,14 +461,14 @@ class NotionDataSource(BaseDataSource):
             },
             "databases": {
                 "label": "List of Databases",
-                "display": "text",
+                "display": "string",
                 "order": 2,
                 "required": True,
                 "type": "list",
             },
             "pages": {
                 "label": "List of Pages",
-                "display": "text",
+                "display": "string",
                 "order": 3,
                 "required": True,
                 "type": "list",
@@ -622,9 +623,8 @@ class NotionDataSource(BaseDataSource):
                 else:
                     file_url = child_block.get("file", {}).get("file", {}).get("url")
                     child_block = self._format_doc(child_block)
-                    yield (
-                        child_block,
-                        partial(self.get_content, copy(child_block), file_url),
+                    yield child_block, partial(
+                        self.get_content, copy(child_block), file_url
                     )
 
         if self.index_comments is True:

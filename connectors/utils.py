@@ -11,11 +11,9 @@ import inspect
 import os
 import platform
 import re
-import secrets
 import shutil
 import ssl
-import string
-import subprocess  # noqa S404
+import subprocess
 import time
 import urllib.parse
 from copy import deepcopy
@@ -117,7 +115,7 @@ def epoch_timestamp_zulu():
 def next_run(quartz_definition, now):
     """Returns the datetime in UTC timezone of the next run."""
     # Year is optional and is never present.
-    _, minutes, hours, day_of_month, month, day_of_week, year = (
+    seconds, minutes, hours, day_of_month, month, day_of_week, year = (
         quartz_definition.split(" ") + [None]
     )[:7]
 
@@ -459,7 +457,7 @@ class ConcurrentTasks:
             )
         elif task.exception():
             logger.error(
-                f"Exception found for task {task.get_name()}", exc_info=task.exception()
+                f"Exception found for task {task.get_name()}: {task.exception()}",
             )
 
     def _add_task(self, coroutine, name=None):
@@ -756,10 +754,10 @@ def truncate_id(_id):
 
 def has_duplicates(strings_list):
     seen = set()
-    for s in strings_list:
-        if s in seen:
+    for string in strings_list:
+        if string in seen:
             return True
-        seen.add(s)
+        seen.add(string)
     return False
 
 
@@ -996,9 +994,3 @@ class Counters:
 
     def to_dict(self):
         return deepcopy(self._storage)
-
-
-def generate_random_id(length=4):
-    return "".join(
-        secrets.choice(string.ascii_letters + string.digits) for _ in range(length)
-    )

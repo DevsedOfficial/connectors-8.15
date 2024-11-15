@@ -4,8 +4,8 @@
 # you may not use this file except in compliance with the Elastic License 2.0.
 #
 # ruff: noqa: T201
-"""Oracle module responsible to generate records on the Oracle server."""
-
+"""Oracle module responsible to generate records on the Oracle server.
+"""
 import os
 import random
 
@@ -23,6 +23,7 @@ BATCH_SIZE = 100
 
 USER = "c##admin"
 PASSWORD = "Password_123"
+ENCODING = "UTF-8"
 DSN = "localhost:1521/FREE"
 
 DATA_SIZE = os.environ.get("DATA_SIZE", "medium").lower()
@@ -65,13 +66,17 @@ def inject_lines(table, cursor, lines):
 async def load():
     """Generate tables and loads table data in the oracle server."""
     """N tables of RECORD_COUNT rows each"""
-    connection = oracledb.connect(user="system", password=PASSWORD, dsn=DSN)
+    connection = oracledb.connect(
+        user="system", password=PASSWORD, dsn=DSN, encoding=ENCODING
+    )
     cursor = connection.cursor()
     cursor.execute(f"CREATE USER {USER} IDENTIFIED by {PASSWORD} CONTAINER=ALL")
     cursor.execute(f"GRANT CONNECT, RESOURCE, DBA TO {USER}")
     connection.commit()
 
-    connection = oracledb.connect(user=USER, password=PASSWORD, dsn=DSN)
+    connection = oracledb.connect(
+        user=USER, password=PASSWORD, dsn=DSN, encoding=ENCODING
+    )
     cursor = connection.cursor()
     for table in range(NUM_TABLES):
         print(f"Adding data for table #{table}...")
@@ -83,7 +88,9 @@ async def load():
 
 async def remove():
     """Removes 10 random items per table"""
-    connection = oracledb.connect(user=USER, password=PASSWORD, dsn=DSN)
+    connection = oracledb.connect(
+        user=USER, password=PASSWORD, dsn=DSN, encoding=ENCODING
+    )
     cursor = connection.cursor()
 
     for table in range(NUM_TABLES):

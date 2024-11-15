@@ -1,6 +1,5 @@
+bin
 lib
-lib64
-dist
 include
 .coverage
 *.un~
@@ -17,6 +16,5 @@ config.yml
 *.iml
 .cli
 
-.venv
 **/venv
 scripts/stack/connectors-config

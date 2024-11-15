@@ -10,7 +10,6 @@ Event loop
 - instantiates connector plugins
 - mirrors an Elasticsearch index with a collection of documents
 """
-
 from datetime import datetime, timezone
 
 from connectors.es.client import License, with_concurrency_control
@@ -62,7 +61,7 @@ class JobSchedulingService(BaseService):
             return
         except DataSourceError as e:
             await connector.error(e)
-            connector.log_error(e, exc_info=True)
+            connector.log_critical(e, exc_info=True)
             raise
 
         # the heartbeat is always triggered
@@ -112,7 +111,9 @@ class JobSchedulingService(BaseService):
             (
                 is_platinum_license_enabled,
                 license_enabled,
-            ) = await self.connector_index.has_active_license_enabled(License.PLATINUM)  # pyright: ignore
+            ) = await self.connector_index.has_active_license_enabled(
+                License.PLATINUM
+            )  # pyright: ignore
 
             if is_platinum_license_enabled:
                 await self._try_schedule_sync(connector, JobType.ACCESS_CONTROL)
@@ -160,7 +161,7 @@ class JobSchedulingService(BaseService):
                         await self._schedule(connector)
 
                 except Exception as e:
-                    self.logger.error(e, exc_info=True)
+                    self.logger.critical(e, exc_info=True)
                     self.raise_if_spurious(e)
 
                 # Immediately break instead of sleeping
@@ -214,7 +215,7 @@ class JobSchedulingService(BaseService):
                 next_sync = connector.next_sync(job_type, last_wake_up_time)
                 connector.log_debug(f"Next '{job_type_value}' sync is at {next_sync}")
             except Exception as e:
-                connector.log_error(e, exc_info=True)
+                connector.log_critical(e, exc_info=True)
                 await connector.error(str(e))
                 return False
 

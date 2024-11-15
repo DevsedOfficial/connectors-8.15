@@ -6,7 +6,6 @@
 """
 Demo of a standalone source
 """
-
 import functools
 import os
 from datetime import datetime, timezone

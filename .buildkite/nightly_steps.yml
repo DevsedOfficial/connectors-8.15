@@ -1,332 +1,134 @@
-definitions:
-  retries: &retries
-    retry:
-      automatic:
-        - exit_status: -1  # Connection to the Agent was lost
-          signal_reason: none
-          limit: 2
-        - exit_status: 255  # Timeout
-          signal_reason: none
-          limit: 2
-        - exit_status: 2  # Flaky test
-          signal_reason: none
-          limit: 2
-
 env:
   DOCKERFILE_FTEST_PATH: "Dockerfile.ftest.wolfi"
 
 steps:
-  - label: "🔨 [Python {{ matrix }}] MySQL"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "mysql"
-      DATA_SIZE: "small"
+  - label: "🔨 MySQL"
+    command:
+      - ".buildkite/run_nigthly.sh mysql"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Network Drive"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "network_drive"
-      DATA_SIZE: "small"
+  - label: "🔨 Network Drive"
+    command:
+      - ".buildkite/run_nigthly.sh network_drive"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Amazon S3"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "s3"
-      DATA_SIZE: "small"
+  - label: "🔨 Amazon S3"
+    command:
+      - ".buildkite/run_nigthly.sh s3"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Google Cloud Storage"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "google_cloud_storage"
-      DATA_SIZE: "small"
+  - label: "🔨 Google Cloud Storage"
+    command:
+      - ".buildkite/run_nigthly.sh google_cloud_storage"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Azure Blob Storage"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "azure_blob_storage"
-      DATA_SIZE: "small"
+  - label: "🔨 Azure Blob Storage"
+    command:
+      - ".buildkite/run_nigthly.sh azure_blob_storage"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Postgresql"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "postgresql"
-      DATA_SIZE: "small"
+  - label: "🔨 Postgresql"
+    command:
+      - ".buildkite/run_nigthly.sh postgresql"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] System Directory"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "dir"
-      DATA_SIZE: "small"
+  - label: "🔨 System Directory"
+    command:
+      - ".buildkite/run_nigthly.sh dir"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Oracle Database"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
+  - label: "🔨 Oracle Database"
+    command:
+      - ".buildkite/run_nigthly.sh oracle"
     env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "oracle"
-      DATA_SIZE: "small"
       SKIP_AARCH64: "true"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Sharepoint Server"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "sharepoint_server"
-      DATA_SIZE: "small"
+  - label: "🔨 Sharepoint Server"
+    command:
+      - ".buildkite/run_nigthly.sh sharepoint_server"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Sharepoint Online"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "sharepoint_online"
-      DATA_SIZE: "small"
+  - label: "🔨 Sharepoint Online"
+    command:
+      - ".buildkite/run_nigthly.sh sharepoint_online"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Microsoft SQL"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "mssql"
-      DATA_SIZE: "small"
-      SKIP_AARCH64: "true"
+  - label: "🔨 Microsoft SQL"
+    command:
+      - ".buildkite/run_nigthly.sh mssql"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Jira"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "jira"
-      DATA_SIZE: "small"
+  - label: "🔨 Jira"
+    command:
+      - ".buildkite/run_nigthly.sh jira"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Confluence"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "confluence"
-      DATA_SIZE: "small"
+  - label: "🔨 Confluence"
+    command:
+      - ".buildkite/run_nigthly.sh confluence"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] ServiceNow"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "servicenow"
-      DATA_SIZE: "small"
+  - label: "🔨 ServiceNow"
+    command:
+      - ".buildkite/run_nigthly.sh servicenow"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] MongoDB"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "mongodb"
-      DATA_SIZE: "small"
+  - label: "🔨 MongoDB"
+    command:
+      - ".buildkite/run_nigthly.sh mongodb"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-#   - label: "🔨 [Python {{ matrix }}] MongoDB Serverless"
-    <<: *retries
-#     command: ".buildkite/run_functional_test.sh"
-#     env:
-#       PYTHON_VERSION: "{{ matrix }}"
-#       CONNECTOR: "mongodb_serverless"
-#       DATA_SIZE: "small"
-#     matrix:
-#       - "3.10"
-#       - "3.11"
+#   - label: "🔨 MongoDB Serverless"
+#     command:
+#       - ".buildkite/run_nigthly.sh mongodb_serverless"
 #     artifact_paths:
 #       - "perf8-report-*/**/*"
-  - label: "🔨 [Python {{ matrix }}] GitHub"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "github"
-      DATA_SIZE: "small"
+  - label: "🔨 GitHub"
+    command:
+      - ".buildkite/run_nigthly.sh github"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Google Drive"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "google_drive"
-      DATA_SIZE: "small"
+  - label: "🔨 Google Drive"
+    command:
+      - ".buildkite/run_nigthly.sh google_drive"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Dropbox"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "dropbox"
-      DATA_SIZE: "small"
+  - label: "🔨 Dropbox"
+    command:
+      - ".buildkite/run_nigthly.sh dropbox"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] OneDrive"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "onedrive"
-      DATA_SIZE: "small"
+  - label: "🔨 OneDrive"
+    command:
+      - ".buildkite/run_nigthly.sh onedrive"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Salesforce"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "salesforce"
-      DATA_SIZE: "small"
+  - label: "🔨 Salesforce"
+    command:
+      - ".buildkite/run_nigthly.sh salesforce"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Zoom"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "zoom"
-      DATA_SIZE: "small"
+  - label: "🔨 Zoom"
+    command:
+      - ".buildkite/run_nigthly.sh zoom"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Box"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "box"
-      DATA_SIZE: "small"
+  - label: "🔨 Box"
+    command:
+      - ".buildkite/run_nigthly.sh box"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Notion"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "notion"
-      DATA_SIZE: "small"
+  - label: "🔨 Notion"
+    command:
+      - ".buildkite/run_nigthly.sh notion"
+  - label: "🔨 Redis"
+    command:
+      - ".buildkite/run_nigthly.sh redis"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] Redis"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "redis"
-      DATA_SIZE: "small"
+  - label: "🔨 GraphQL"
+    command:
+      - ".buildkite/run_nigthly.sh graphql"
     artifact_paths:
       - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"
-  - label: "🔨 [Python {{ matrix }}] GraphQL"
-    <<: *retries
-    command: ".buildkite/run_functional_test.sh"
-    env:
-      PYTHON_VERSION: "{{ matrix }}"
-      CONNECTOR: "graphql"
-      DATA_SIZE: "small"
-    artifact_paths:
-      - "perf8-report-*/**/*"
-    matrix:
-      - "3.10"
-      - "3.11"

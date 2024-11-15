@@ -17,7 +17,6 @@
 Elasticsearch <== Sink <== queue <== Extractor <== generator
 
 """
-
 import asyncio
 import copy
 import functools
@@ -514,7 +513,7 @@ class Extractor:
                 )
                 return
 
-            self._logger.error("Document extractor failed", exc_info=True)
+            self._logger.critical("Document extractor failed", exc_info=True)
             await self.put_doc(EXTRACTOR_ERROR)
             self.error = e
 
@@ -836,16 +835,15 @@ class SyncOrchestrator:
         # TODO: think how to make it not a proxy method to the client
         return await self.es_management_client.has_active_license_enabled(license_)
 
-    def extract_index_or_alias(self, get_index_response, expected_index_name):
-        return None
-
     async def prepare_content_index(self, index_name, language_code=None):
         """Creates the index, given a mapping/settings if it does not exist."""
         self._logger.debug(f"Checking index {index_name}")
 
-        index = await self.es_management_client.get_index_or_alias(
+        result = await self.es_management_client.get_index(
             index_name, ignore_unavailable=True
         )
+
+        index = result.get(index_name, None)
 
         mappings = Mappings.default_text_fields_mappings(is_connectors_index=True)
 
@@ -860,7 +858,7 @@ class SyncOrchestrator:
             )
 
             await self.es_management_client.ensure_content_index_mappings(
-                index_name=index_name, index=index, desired_mappings=mappings
+                index_name, mappings
             )
         else:
             # Create a new index
@@ -1052,25 +1050,15 @@ class SyncOrchestrator:
         self._sink_task.add_done_callback(functools.partial(self.sink_task_callback))
 
     def sink_task_callback(self, task):
-        if task.cancelled():
-            self._logger.warning(
-                f"{type(self._sink).__name__}: {task.get_name()} was cancelled before completion"
-            )
-        elif task.exception():
+        if task.exception():
             self._logger.error(
-                f"Encountered an error in the sync's {type(self._sink).__name__}: {task.get_name()}",
-                exc_info=task.exception(),
+                f"Encountered an error in the sync's {type(self._sink).__name__}: {task.get_name()}: {task.exception()}",
             )
             self.error = task.exception()
 
     def extractor_task_callback(self, task):
-        if task.cancelled():
-            self._logger.warning(
-                f"{type(self._extractor).__name__}: {task.get_name()} was cancelled before completion"
-            )
-        elif task.exception():
+        if task.exception():
             self._logger.error(
-                f"Encountered an error in the sync's {type(self._extractor).__name__}: {task.get_name()}",
-                exc_info=task.exception(),
+                f"Encountered an error in the sync's {type(self._extractor).__name__}: {task.get_name()}: {task.exception()}",
             )
             self.error = task.exception()

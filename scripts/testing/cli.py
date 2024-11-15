@@ -1,16 +1,13 @@
-#
-# Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
-# or more contributor license agreements. Licensed under the Elastic License 2.0;
-# you may not use this file except in compliance with the Elastic License 2.0.
-#
+#!/usr/bin/python3
 
 import json
 import os
 import re
-import subprocess  # noqa S404
+import subprocess
 import tempfile
 import time
 from contextlib import contextmanager
+from subprocess import PIPE, STDOUT
 
 import click
 import yaml
@@ -232,9 +229,7 @@ def create_vm(name, vm_type, vm_zone):
                 "--command",
                 "sudo ls /var/log/startup-is-finished ",
             ]
-            result = subprocess.run(  # noqa: S603
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-            )
+            result = subprocess.run(cmd, stdout=PIPE, stderr=STDOUT)  # noqa: S603
 
             stdout = result.stdout.decode("utf-8")
             # indicates that the VM is booting
@@ -580,7 +575,7 @@ def read_from_vault(key):
     """
     _, secret_prefix, field = key.split(":")
     cmd = ["vault", "read", "-field", field, f"{VAULT_SECRETS_PREFIX}/{secret_prefix}"]
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)  # noqa: S603
+    result = subprocess.run(cmd, stdout=PIPE, stderr=STDOUT)  # noqa: S603
     if result.returncode != 0:
         click.echo(result.stdout, err=True)
         raise click.Abort(result.stdout)
@@ -592,7 +587,7 @@ def run_gcloud_cmd(cmd):
     """
     Runs a gcloud command and raises an exception if the command failed
     """
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)  # noqa: S603
+    result = subprocess.run(cmd, stdout=PIPE, stderr=STDOUT)  # noqa: S603
     if result.returncode != 0:
         click.echo(result.stdout, err=True)
         raise click.Abort(result.stdout)

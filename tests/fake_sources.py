@@ -6,7 +6,6 @@
 """
 Collection of fake source classes for tests
 """
-
 from functools import partial
 from unittest.mock import Mock
 

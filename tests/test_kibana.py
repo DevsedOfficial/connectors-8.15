@@ -37,15 +37,7 @@ def test_main(patch_logger, mock_responses):
     headers = {"X-Elastic-Product": "Elasticsearch"}
 
     mock_responses.put(
-        "http://nowhere.com:9200/_connector/1",
-        headers=headers,
-    )
-    mock_responses.put(
-        "http://nowhere.com:9200/_connector/1/_scheduling",
-        headers=headers,
-    )
-    mock_responses.put(
-        "http://nowhere.com:9200/_connector/1/_configuration",
+        "http://nowhere.com:9200/.elastic-connectors-v1/_doc/1",
         headers=headers,
     )
     mock_index_creation("data", mock_responses, hidden=False)
